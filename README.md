@@ -1,40 +1,50 @@
 # Model Workflow
 
-## 1. Data Preparation
+## 1. Exploratory Data Analysis
 
-No missing values were found in the dataset, so no imputation was required.
+The dataset was first explored to understand its structure and modeling challenges.
+
+The EDA included:
+
+- checking dataset shape and data types
+- checking missing values
+- checking duplicate rows
+- comparing train and test distributions
+- exploring categorical variable distributions
+- exploring numerical variable distributions
+- analyzing target class imbalance
+- examining feature distributions by target class
+- reviewing numerical correlations using a heatmap
+
+The EDA showed that the dataset had no missing values or duplicate rows, but contained several categorical variables requiring encoding. The target variable was imbalanced, with only about 11% of observations belonging to the positive class. Several numerical variables, such as `contact_time_minutes` and `contact_attempt_count`, were highly right-skewed, while `days_since_prior_contact` contained a special value around 999. These observations guided later preprocessing, feature engineering, and model evaluation choices.
+
+## 2. Data Preparation
+
+No imputation was required because no missing values were found.
 
 Categorical variables were encoded using one-hot encoding, and train/test datasets were aligned after encoding to ensure consistent feature structures.
 
-Because the target variable was imbalanced (approximately 11% positive class), Stratified 5-Fold Cross-Validation was used throughout the modeling process to preserve label distribution during validation.
+Because the target variable was imbalanced, Stratified 5-Fold Cross-Validation was used throughout the modeling process to preserve label distribution during validation. F1 score was used as the primary evaluation metric.
 
----
+## 3. Feature Engineering
 
-## 2. Feature Engineering
-
-Several additional features were created to capture customer interaction behavior and prior contact information more effectively:
+Several additional features were created based on EDA findings:
 
 - Interaction feature: `contact_time_minutes × contact_attempt_count`
 - Ratio feature: `time_per_attempt`
 - Binary indicator: `has_prior_contact`
 
-Feature engineering improved the performance of several tree-based models, particularly Random Forest, XGBoost, and LightGBM, indicating that interaction-based behavioral features provided useful predictive information.
+These features were designed to capture customer engagement intensity and prior contact information more effectively.
 
----
-
-## 3. Feature Selection
+## 4. Feature Selection
 
 Feature selection was performed after feature engineering using XGBoost permutation importance.
 
-The top 20 most important features were selected to reduce lower-importance variables and simplify the feature space.
+The top 20 features were selected to reduce lower-importance variables and simplify the feature space. XGBoost and CatBoost slightly benefited from feature selection, while LightGBM performed better using the full feature-engineered dataset.
 
-Different models responded differently to feature selection. XGBoost and CatBoost showed slight performance improvements after feature selection, while LightGBM performed better using the full feature-engineered dataset.
+## 5. Modeling and Hyperparameter Tuning
 
----
-
-## 4. Baseline Models
-
-Multiple models were evaluated to capture different patterns in the data:
+Five baseline models were evaluated:
 
 - Logistic Regression
 - Random Forest
@@ -42,54 +52,16 @@ Multiple models were evaluated to capture different patterns in the data:
 - LightGBM
 - CatBoost
 
-Tree-based boosting models consistently outperformed the linear baseline model, suggesting the presence of non-linear relationships and feature interactions within the dataset.
-
----
-
-## 5. Hyperparameter Tuning
-
-Hyperparameter tuning was performed on the strongest boosting models:
-
-- XGBoost
-- LightGBM
-- CatBoost
-
-GridSearchCV with Stratified 5-Fold Cross-Validation was used to optimize model performance using F1 score as the primary evaluation metric.
-
-Key parameters tuned included:
-
-- Number of estimators
-- Learning rate
-- Tree depth / number of leaves
-- Subsampling ratios
-
-Different feature sets were used for different models based on earlier validation performance. LightGBM performed best using the full feature-engineered dataset, while XGBoost and CatBoost slightly benefited from the reduced feature-selected dataset.
-
----
+Tree-based boosting models performed best, so hyperparameter tuning focused on LightGBM, XGBoost, and CatBoost using GridSearchCV with Stratified 5-Fold Cross-Validation.
 
 ## 6. Ensemble Learning
 
-Probability blending ensemble methods were applied using the tuned boosting models:
+Soft probability blending and weighted probability blending were evaluated using the tuned LightGBM, XGBoost, and CatBoost models.
 
-- LightGBM
-- XGBoost
-- CatBoost
+LightGBM used the full feature-engineered dataset, while XGBoost and CatBoost used the selected top features. Weighted probability blending achieved the best overall validation performance.
 
-Two ensemble approaches were evaluated:
+## Final Model
 
-- Soft probability blending
-- Weighted probability blending
+The final selected model was the weighted probability blending ensemble combining tuned LightGBM, XGBoost, and CatBoost.
 
-Weighted probability blending achieved the strongest overall performance by assigning larger weights to stronger-performing models, particularly LightGBM.
-
-The ensemble approach demonstrated that combining multiple boosting models could capture complementary predictive patterns more effectively than any single model alone.
-
----
-
-# Final Model
-
-The final selected model was the weighted probability blending ensemble combining tuned LightGBM, XGBoost, and CatBoost models.
-
-This model achieved the highest overall validation performance with a Mean CV F1 score of approximately 0.656 using Stratified 5-Fold Cross-Validation.
-
-The final ensemble leveraged the complementary strengths of multiple tuned boosting algorithms while assigning larger ensemble weights to stronger-performing models.
+The final model achieved the highest validation performance with a Mean CV F1 score of approximately 0.656 using Stratified 5-Fold Cross-Validation.
