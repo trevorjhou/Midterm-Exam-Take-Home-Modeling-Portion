@@ -52,7 +52,24 @@ Five baseline models were evaluated:
 - LightGBM
 - CatBoost
 
-Tree-based boosting models performed best, so hyperparameter tuning focused on LightGBM, XGBoost, and CatBoost using GridSearchCV with Stratified 5-Fold Cross-Validation.
+Tree-based boosting models consistently achieved the strongest performance, indicating the presence of non-linear relationships and interaction effects within the dataset.
+
+Hyperparameter tuning was therefore focused on the strongest boosting models:
+
+- LightGBM
+- XGBoost
+- CatBoost
+
+GridSearchCV with Stratified 5-Fold Cross-Validation was used to optimize model performance using F1 score as the primary evaluation metric.
+
+Different feature sets were used for different models based on earlier validation performance. LightGBM achieved better results using the full feature-engineered dataset, while XGBoost and CatBoost slightly benefited from the reduced feature-selected dataset.
+
+Key parameters tuned included:
+
+- number of estimators
+- learning rate
+- tree depth / number of leaves
+- subsampling ratios
 
 ## 6. Ensemble Learning
 
