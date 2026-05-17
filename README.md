@@ -1,5 +1,8 @@
 # Model Workflow
 
+## Predicting Customer Response to an Outreach Campaign
+To predict whether a customer accepts an offer (accepted_offer = 1 if accepted, 0 otherwise) 
+
 ## 1. Exploratory Data Analysis
 
 The dataset was first explored to understand its structure and modeling challenges.
